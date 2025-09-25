@@ -65,6 +65,11 @@
     <button id="processBtn" class="mt-4 w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition">Process OCR</button>
 
     <div id="status" class="text-sm text-gray-500 mt-4 text-center"></div>
+
+    <div id="croppedPreviewContainer" class="mt-4 flex justify-center">
+        <img id="croppedPreview" class="rounded-lg shadow-md" style="max-width:100%; display:none;">
+        </div>
+
     <pre id="output" class="bg-gray-100 p-3 rounded-lg text-sm mt-4"></pre>
   </div>
 
@@ -126,6 +131,12 @@
 
       // Crop image and send to Tesseract
       const canvas = cropper.getCroppedCanvas();
+
+      // Show cropped image preview
+        const croppedPreview = document.getElementById('croppedPreview');
+        croppedPreview.src = canvas.toDataURL(); // convert canvas to a previewable image
+        croppedPreview.style.display = 'block';
+
       canvas.toBlob(async (blob) => {
         try {
           const { data: { text } } = await Tesseract.recognize(blob, 'eng', {
