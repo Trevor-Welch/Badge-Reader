@@ -1,44 +1,55 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>OCR Camera Demo</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <style>
-      body { font-family: sans-serif; padding: 1em; }
-      #output { white-space: pre-wrap; margin-top: 1em; }
-    </style>
-  </head>
-  <body>
-    <h1>OCR Camera Demo</h1>
-    <p>Take a picture of your code:</p>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR Camera Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-2xl p-6 max-w-md w-full">
+    <h1 class="text-2xl font-bold text-center mb-4">OCR Camera Demo</h1>
+    <p class="text-gray-600 text-center mb-4">Take a picture of your code</p>
 
-    <!-- Opens phone camera directly -->
-    <input type="file" accept="image/*" capture="environment" id="cameraInput">
+    <label class="block">
+      <input 
+        type="file" 
+        accept="image/*" 
+        capture="environment" 
+        id="cameraInput" 
+        class="hidden"
+      />
+      <span class="inline-block w-full bg-blue-600 text-white py-3 rounded-xl text-center font-medium cursor-pointer hover:bg-blue-700 transition">
+        Open Camera
+      </span>
+    </label>
 
-    <div id="status"></div>
-    <pre id="output"></pre>
+    <div id="status" class="text-sm text-gray-500 mt-4 text-center"></div>
+    <pre id="output" class="bg-gray-100 p-3 rounded-lg text-sm mt-4"></pre>
+  </div>
 
-    <script>
-      const cameraInput = document.getElementById('cameraInput');
-      const statusEl = document.getElementById('status');
-      const output = document.getElementById('output');
+  <script>
+    const cameraInput = document.getElementById('cameraInput');
+    const statusEl = document.getElementById('status');
+    const output = document.getElementById('output');
 
-      cameraInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    cameraInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-        statusEl.textContent = "Processing…";
+      statusEl.textContent = "Processing…";
 
-        try {
-          const { data: { text } } = await Tesseract.recognize(file, 'eng', {
-            logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
-          });
-          statusEl.textContent = "Done!";
-          output.textContent = text;
-        } catch (err) {
-          statusEl.textContent = "Error: " + err.message;
-        }
-      });
-    </script>
-  </body>
+      try {
+        const { data: { text } } = await Tesseract.recognize(file, 'eng', {
+          logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
+        });
+        statusEl.textContent = "✅ Done!";
+        output.textContent = text;
+      } catch (err) {
+        statusEl.textContent = "❌ Error: " + err.message;
+      }
+    });
+  </script>
+</body>
 </html>
