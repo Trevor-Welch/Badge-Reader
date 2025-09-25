@@ -147,33 +147,57 @@
       croppedPreview.src = canvas.toDataURL();
       croppedPreview.style.display = 'block';
 
+      async function runOCR(blob) {
+        const { data: { text } } = await Tesseract.recognize(blob, 'eng', {
+        logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
+        });
+        return text;
+     }
+
       canvas.toBlob(async (blob) => {
             try {
-                const { data: { text } } = await Tesseract.recognize(blob, 'eng', {
-                logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
-                });
-                statusEl.textContent = "✅ Done!";
+      let text = await runOCR(blob);
 
-                // Extract all 5-digit numeric sequences
-                const allMatches = text.match(/\d{5}/g); // returns an array of all 5-digit numbers
-                const codeMatch = allMatches ? allMatches[allMatches.length - 1] : null; // pick the last one
+      // Extract all 5-digit numeric sequences
+      let allMatches = text.match(/\d{5}/g);
+      let codeMatch = allMatches ? allMatches[allMatches.length - 1] : null;
 
-                if (codeMatch) {
-                    mainOutput.textContent = `Code found: ${codeMatch}`;
-                    mainOutput.style.display = 'block';
-                    fullOutput.textContent = '';
-                    fullOutput.style.display = 'none';
-                } else {
-                    mainOutput.textContent = "No 5-digit code found.";
-                    mainOutput.style.display = 'block';
-                    fullOutput.textContent = text;
-                    fullOutput.style.display = 'block';
-                }
+        if (!codeMatch) {
+            // Try bottom-right crop
+            statusEl.textContent = "Trying again…";
 
-            } catch (err) {
-                statusEl.textContent = "❌ Error: " + err.message;
-            }
-        });
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const bottomRightCanvas = document.createElement('canvas');
+            bottomRightCanvas.width = w / 2;
+            bottomRightCanvas.height = h / 2;
+            const brCtx = bottomRightCanvas.getContext('2d');
+            brCtx.drawImage(canvas, w / 2, h / 2, w / 2, h / 2, 0, 0, w / 2, h / 2);
+
+            const brBlob = await new Promise(resolve => bottomRightCanvas.toBlob(resolve));
+            text = await runOCR(brBlob);
+
+            allMatches = text.match(/\d{5}/g);
+            codeMatch = allMatches ? allMatches[allMatches.length - 1] : null;
+        }
+        if (codeMatch) {
+            mainOutput.textContent = `Code found: ${codeMatch}`;
+            mainOutput.style.display = 'block';
+            fullOutput.textContent = '';
+            fullOutput.style.display = 'none';
+        } else {
+            mainOutput.textContent = "No 5-digit code found.";
+            mainOutput.style.display = 'block';
+            fullOutput.textContent = text;
+            fullOutput.style.display = 'block';
+        }
+        statusEl.textContent = "✅ Done!";
+        } catch (err) {
+            statusEl.textContent = "❌ Error: " + err.message;
+        }
+    });
     });
 
     // Desktop badge input (bottom right code only)
