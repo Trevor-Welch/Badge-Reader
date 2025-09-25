@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OCR Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  </head>
+  <body>
+    <h1>OCR Demo</h1>
+    <input type="file" accept="image/*" capture="environment" id="fileInput">
+    <pre id="output"></pre>
+
+    <script>
+      const input = document.getElementById('fileInput');
+      const output = document.getElementById('output');
+
+      input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const { data: { text } } = await Tesseract.recognize(file, 'eng');
+        output.textContent = text;
+      });
+    </script>
+  </body>
+</html>
