@@ -1,24 +1,43 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>OCR Test</title>
+    <title>OCR Camera Demo</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+      body { font-family: sans-serif; padding: 1em; }
+      #output { white-space: pre-wrap; margin-top: 1em; }
+    </style>
   </head>
   <body>
-    <h1>OCR Demo</h1>
-    <input type="file" accept="image/*" capture="environment" id="fileInput">
+    <h1>OCR Camera Demo</h1>
+    <p>Take a picture of your code:</p>
+
+    <!-- Opens phone camera directly -->
+    <input type="file" accept="image/*" capture="environment" id="cameraInput">
+
+    <div id="status"></div>
     <pre id="output"></pre>
 
     <script>
-      const input = document.getElementById('fileInput');
+      const cameraInput = document.getElementById('cameraInput');
+      const statusEl = document.getElementById('status');
       const output = document.getElementById('output');
 
-      input.addEventListener('change', async (e) => {
+      cameraInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const { data: { text } } = await Tesseract.recognize(file, 'eng');
-        output.textContent = text;
+        statusEl.textContent = "Processing…";
+
+        try {
+          const { data: { text } } = await Tesseract.recognize(file, 'eng', {
+            logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
+          });
+          statusEl.textContent = "Done!";
+          output.textContent = text;
+        } catch (err) {
+          statusEl.textContent = "Error: " + err.message;
+        }
       });
     </script>
   </body>
