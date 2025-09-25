@@ -9,10 +9,11 @@
   <style>
     @import url('https://fonts.cdnfonts.com/css/ocr-b');
 
+    /* Badge box styling */
     .badge-box {
       width: 100%;
-      max-width: 300px;
-      height: 150px;
+      max-width: 800px; /* larger for desktop */
+      height: 200px;
       border: 2px solid #333;
       border-radius: 16px;
       background-color: #fff;
@@ -20,18 +21,42 @@
       padding: 16px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       font-family: 'OCR B', monospace;
+      margin-top: 2rem; /* space from input box */
     }
-
     .badge-text {
       position: absolute;
       bottom: 16px;
       right: 16px;
-      font-size: 1.5rem;
+      font-size: 2rem;
       letter-spacing: 2px;
+    }
+
+    /* Camera overlay */
+    .camera-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      margin: auto;
+    }
+    .camera-video {
+      width: 100%;
+      border-radius: 16px;
+    }
+    .overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 20%;
+      border: 2px dashed #00BFFF;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      border-radius: 12px;
     }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start p-6 space-y-8">
+
   <!-- Camera OCR Card -->
   <div class="bg-white shadow-lg rounded-2xl p-6 max-w-md w-full">
     <h1 class="text-2xl font-bold text-center mb-4">OCR Camera Demo</h1>
@@ -50,12 +75,17 @@
       </span>
     </label>
 
+    <div class="camera-container mt-4">
+      <video id="videoPreview" class="camera-video hidden" autoplay playsinline></video>
+      <div class="overlay"></div>
+    </div>
+
     <div id="status" class="text-sm text-gray-500 mt-4 text-center"></div>
     <pre id="output" class="bg-gray-100 p-3 rounded-lg text-sm mt-4"></pre>
   </div>
 
   <!-- Test on Desktop Card -->
-  <div class="bg-white shadow-lg rounded-2xl p-6 max-w-md w-full">
+  <div class="bg-white shadow-lg rounded-2xl p-6 max-w-2xl w-full">
     <h1 class="text-2xl font-bold text-center mb-4">Test Badge Text</h1>
     <p class="text-gray-600 text-center mb-4">Type something and see it on your badge</p>
 
@@ -73,12 +103,19 @@
     const cameraInput = document.getElementById('cameraInput');
     const statusEl = document.getElementById('status');
     const output = document.getElementById('output');
+    const videoPreview = document.getElementById('videoPreview');
 
+    // Show live preview (optional)
     cameraInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       statusEl.textContent = "Processing…";
+
+      // Show captured image in video element as feedback
+      const url = URL.createObjectURL(file);
+      videoPreview.src = url;
+      videoPreview.classList.remove('hidden');
 
       try {
         const { data: { text } } = await Tesseract.recognize(file, 'eng', {
