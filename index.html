@@ -22,7 +22,7 @@
       position: relative;
       padding: 16px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      font-family: 'OCR B', monospace;
+      font-family: sans-serif; /* default for most text */
       margin-top: 2rem;
     }
     .badge-text {
@@ -31,6 +31,7 @@
       right: 16px;
       font-size: 2rem;
       letter-spacing: 2px;
+      font-family: 'OCR B', monospace; /* only code */
     }
 
     /* Cropper container */
@@ -67,8 +68,8 @@
     <div id="status" class="text-sm text-gray-500 mt-4 text-center"></div>
 
     <div id="croppedPreviewContainer" class="mt-4 flex justify-center">
-        <img id="croppedPreview" class="rounded-lg shadow-md" style="max-width:100%; display:none;">
-        </div>
+      <img id="croppedPreview" class="rounded-lg shadow-md" style="max-width:100%; display:none;">
+    </div>
 
     <pre id="output" class="bg-gray-100 p-3 rounded-lg text-sm mt-4"></pre>
   </div>
@@ -83,7 +84,10 @@
 
     <div class="flex justify-center">
       <div class="badge-box">
-        <div class="badge-text" id="badgeDisplay">12345</div>
+        <div class="text-lg font-medium">John Smith</div>
+        <div class="text-sm text-gray-600 mt-1">Attendee</div>
+        <div class="text-sm text-gray-600">Convention 2025</div>
+        <div class="badge-text" id="badgeDisplay">12345</div> <!-- OCR-B code -->
       </div>
     </div>
   </div>
@@ -129,13 +133,12 @@
 
       statusEl.textContent = "Processing…";
 
-      // Crop image and send to Tesseract
       const canvas = cropper.getCroppedCanvas();
 
       // Show cropped image preview
-        const croppedPreview = document.getElementById('croppedPreview');
-        croppedPreview.src = canvas.toDataURL(); // convert canvas to a previewable image
-        croppedPreview.style.display = 'block';
+      const croppedPreview = document.getElementById('croppedPreview');
+      croppedPreview.src = canvas.toDataURL();
+      croppedPreview.style.display = 'block';
 
       canvas.toBlob(async (blob) => {
         try {
@@ -143,14 +146,17 @@
             logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
           });
           statusEl.textContent = "✅ Done!";
-          output.textContent = text;
+
+          // Extract first 5-digit numeric code
+          const codeMatch = text.match(/\b\d{5}\b/);
+          output.textContent = codeMatch ? `Code found: ${codeMatch[0]}` : "No 5-digit code found.";
         } catch (err) {
           statusEl.textContent = "❌ Error: " + err.message;
         }
       });
     });
 
-    // Desktop badge input
+    // Desktop badge input (bottom right code only)
     const badgeInput = document.getElementById('badgeInput');
     const badgeDisplay = document.getElementById('badgeDisplay');
 
