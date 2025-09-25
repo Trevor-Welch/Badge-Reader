@@ -99,7 +99,12 @@
     const output = document.getElementById('output');
     const cropContainer = document.getElementById('cropContainer');
     const processBtn = document.getElementById('processBtn');
+    const mainOutput = document.getElementById('output');
+    const fullOutput = document.getElementById('fullTextOutput');
     let cropper;
+
+    mainOutput.style.display = 'none';
+    fullOutput.style.display = 'none';
 
     cameraInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -153,13 +158,15 @@
                 const codeMatch = allMatches ? allMatches[allMatches.length - 1] : null; // pick the last one
 
                 if (codeMatch) {
-                output.textContent = `Code found: ${codeMatch}`;
-                // Clear secondary output if previously shown
-                document.getElementById('fullTextOutput').textContent = '';
+                    mainOutput.textContent = `Code found: ${codeMatch}`;
+                    mainOutput.style.display = 'block';
+                    fullOutput.textContent = '';
+                    fullOutput.style.display = 'none';
                 } else {
-                output.textContent = "No 5-digit code found.";
-                // Show full OCR text
-                document.getElementById('fullTextOutput').textContent = text;
+                    mainOutput.textContent = "No 5-digit code found.";
+                    mainOutput.style.display = 'block';
+                    fullOutput.textContent = text;
+                    fullOutput.style.display = 'block';
                 }
 
             } catch (err) {
