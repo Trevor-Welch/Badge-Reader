@@ -148,8 +148,9 @@
           statusEl.textContent = "✅ Done!";
 
           // Extract first 5-digit numeric code
-          const codeMatch = text.match(/\b\d{5}\b/);
-          output.textContent = codeMatch ? `Code found: ${codeMatch[0]}` : "No 5-digit code found.";
+          const allMatches = text.match(/\d{5}/g); // returns an array of all 5-digit numbers
+            const codeMatch = allMatches ? allMatches[allMatches.length - 1] : null; // pick the last one
+            output.textContent = codeMatch ? `Code found: ${codeMatch}` : "No 5-digit code found.";
         } catch (err) {
           statusEl.textContent = "❌ Error: " + err.message;
         }
