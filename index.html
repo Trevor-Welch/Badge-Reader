@@ -72,6 +72,7 @@
     </div>
 
     <pre id="output" class="bg-gray-100 p-3 rounded-lg text-sm mt-4"></pre>
+    <pre id="fullTextOutput" class="bg-gray-100 p-3 rounded-lg text-sm mt-2 text-gray-700"></pre>
   </div>
 
   <!-- Test on Desktop Card -->
@@ -141,20 +142,30 @@
       croppedPreview.style.display = 'block';
 
       canvas.toBlob(async (blob) => {
-        try {
-          const { data: { text } } = await Tesseract.recognize(blob, 'eng', {
-            logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
-          });
-          statusEl.textContent = "✅ Done!";
+            try {
+                const { data: { text } } = await Tesseract.recognize(blob, 'eng', {
+                logger: m => statusEl.textContent = m.status + " (" + Math.round(m.progress * 100) + "%)"
+                });
+                statusEl.textContent = "✅ Done!";
 
-          // Extract first 5-digit numeric code
-          const allMatches = text.match(/\d{5}/g); // returns an array of all 5-digit numbers
-            const codeMatch = allMatches ? allMatches[allMatches.length - 1] : null; // pick the last one
-            output.textContent = codeMatch ? `Code found: ${codeMatch}` : "No 5-digit code found.";
-        } catch (err) {
-          statusEl.textContent = "❌ Error: " + err.message;
-        }
-      });
+                // Extract all 5-digit numeric sequences
+                const allMatches = text.match(/\d{5}/g); // returns an array of all 5-digit numbers
+                const codeMatch = allMatches ? allMatches[allMatches.length - 1] : null; // pick the last one
+
+                if (codeMatch) {
+                output.textContent = `Code found: ${codeMatch}`;
+                // Clear secondary output if previously shown
+                document.getElementById('fullTextOutput').textContent = '';
+                } else {
+                output.textContent = "No 5-digit code found.";
+                // Show full OCR text
+                document.getElementById('fullTextOutput').textContent = text;
+                }
+
+            } catch (err) {
+                statusEl.textContent = "❌ Error: " + err.message;
+            }
+        });
     });
 
     // Desktop badge input (bottom right code only)
